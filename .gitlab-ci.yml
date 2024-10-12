@@ -1,0 +1,33 @@
+stages:
+  - build
+  - test
+  - deploy
+
+# Этап сборки: установка зависимостей через Composer
+build:
+  stage: build
+  image: php:8.0
+  script:
+    - apt-get update && apt-get install -y unzip
+    - curl -sS https://getcomposer.org/installer | php
+    - php composer.phar install
+
+# Этап тестирования: запуск PHPUnit тестов
+test:
+  stage: test
+  image: php:8.0
+  script:
+    - vendor/bin/phpunit --testdox
+  artifacts:
+    when: always
+    reports:
+      junit: report.xml
+
+# Этап деплоя: копирование файлов на сервер
+deploy:
+  stage: deploy
+  script:
+    - echo "Деплой проекта на сервер"
+    - scp -r * user@server:/var/www/html/my-php-project
+  only:
+    - master # Выполняем деплой только на ветку main
